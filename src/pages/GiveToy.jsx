@@ -21,55 +21,59 @@ export default function GiveToy() {
   const { addToy } = useToys()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
+  // Only selects are controlled — they don't use the keyboard
+  const [selects, setSelects] = useState({
     category: '',
     condition: '',
     ageMin: '5',
     ageMax: '9',
     area: '',
-    street: '',
-    posterName: '',
-    posterContact: '',
   })
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
 
-  // Stable handler — same function reference across all renders
-  const handleChange = useCallback((e) => {
+  const handleSelectChange = useCallback((e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setSelects((prev) => ({ ...prev, [name]: value }))
   }, [])
-
-  function validate() {
-    const e = {}
-    if (!form.title.trim()) e.title = 'Please enter a title.'
-    if (!form.description.trim()) e.description = 'Please describe the toy.'
-    if (!form.category) e.category = 'Select a category.'
-    if (!form.condition) e.condition = 'Select a condition.'
-    if (!form.area) e.area = 'Select your area.'
-    if (!form.street.trim()) e.street = 'Enter a cross street or intersection.'
-    if (!form.posterName.trim()) e.posterName = 'Enter your first name.'
-    if (!form.posterContact.trim()) e.posterContact = 'Enter an email or phone.'
-    if (parseInt(form.ageMin) > parseInt(form.ageMax))
-      e.ageMin = 'Min age must be ≤ max age.'
-    return e
-  }
 
   function handleSubmit(e) {
     e.preventDefault()
-    const errs = validate()
+    const fd = new FormData(e.target)
+
+    // Collect text field values from the DOM directly via FormData
+    const data = {
+      title:         fd.get('title')         ?? '',
+      description:   fd.get('description')   ?? '',
+      street:        fd.get('street')         ?? '',
+      posterName:    fd.get('posterName')     ?? '',
+      posterContact: fd.get('posterContact')  ?? '',
+      ...selects,
+    }
+
+    const errs = {}
+    if (!data.title.trim())         errs.title         = 'Please enter a title.'
+    if (!data.description.trim())   errs.description   = 'Please describe the toy.'
+    if (!data.category)             errs.category      = 'Select a category.'
+    if (!data.condition)            errs.condition     = 'Select a condition.'
+    if (!data.area)                 errs.area          = 'Select your area.'
+    if (!data.street.trim())        errs.street        = 'Enter a cross street or intersection.'
+    if (!data.posterName.trim())    errs.posterName    = 'Enter your first name.'
+    if (!data.posterContact.trim()) errs.posterContact = 'Enter an email or phone.'
+    if (parseInt(data.ageMin) > parseInt(data.ageMax))
+      errs.ageMin = 'Min age must be ≤ max age.'
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
+
     const id = addToy({
-      ...form,
-      ageMin: parseInt(form.ageMin),
-      ageMax: parseInt(form.ageMax),
-      emoji: EMOJI_BY_CATEGORY[form.category] ?? '🧸',
+      ...data,
+      ageMin: parseInt(data.ageMin),
+      ageMax: parseInt(data.ageMax),
+      emoji: EMOJI_BY_CATEGORY[data.category] ?? '🧸',
       tags: [],
     })
     setSubmitted(true)
@@ -95,7 +99,6 @@ export default function GiveToy() {
         </p>
       </div>
 
-      {/* Callout */}
       <div className="mb-8 rounded-2xl bg-brand-50 border border-brand-100 p-4 flex gap-3">
         <span className="text-2xl shrink-0">📍</span>
         <div className="text-sm text-brand-800">
@@ -106,14 +109,15 @@ export default function GiveToy() {
       </div>
 
       <form onSubmit={handleSubmit} noValidate className="card p-6 sm:p-8 flex flex-col gap-6">
+
+        {/* Uncontrolled text inputs — React never updates their value, keyboard stays open */}
         <Field id="title" label="Toy name *" error={errors.title}>
           <input
             id="title"
             name="title"
             type="text"
             placeholder="e.g. LEGO City Police Station"
-            value={form.title}
-            onChange={handleChange}
+            defaultValue=""
             className={`input ${errors.title ? 'border-red-400' : ''}`}
           />
         </Field>
@@ -124,8 +128,7 @@ export default function GiveToy() {
             name="description"
             rows={4}
             placeholder="Describe the toy — what's included, what's missing, age it's been used for, any flaws..."
-            value={form.description}
-            onChange={handleChange}
+            defaultValue=""
             className={`input resize-none ${errors.description ? 'border-red-400' : ''}`}
           />
         </Field>
@@ -135,8 +138,8 @@ export default function GiveToy() {
             <select
               id="category"
               name="category"
-              value={form.category}
-              onChange={handleChange}
+              value={selects.category}
+              onChange={handleSelectChange}
               className={`input ${errors.category ? 'border-red-400' : ''}`}
             >
               <option value="">Select category…</option>
@@ -150,8 +153,8 @@ export default function GiveToy() {
             <select
               id="condition"
               name="condition"
-              value={form.condition}
-              onChange={handleChange}
+              value={selects.condition}
+              onChange={handleSelectChange}
               className={`input ${errors.condition ? 'border-red-400' : ''}`}
             >
               <option value="">Select condition…</option>
@@ -162,14 +165,13 @@ export default function GiveToy() {
           </Field>
         </div>
 
-        {/* Age range */}
         <div>
           <label className="label">Suitable age range *</label>
           <div className="flex items-center gap-3">
             <select
               name="ageMin"
-              value={form.ageMin}
-              onChange={handleChange}
+              value={selects.ageMin}
+              onChange={handleSelectChange}
               className={`input flex-1 ${errors.ageMin ? 'border-red-400' : ''}`}
             >
               {[5,6,7,8,9].map((a) => <option key={a} value={a}>{a} yrs</option>)}
@@ -177,8 +179,8 @@ export default function GiveToy() {
             <span className="text-gray-400 shrink-0">to</span>
             <select
               name="ageMax"
-              value={form.ageMax}
-              onChange={handleChange}
+              value={selects.ageMax}
+              onChange={handleSelectChange}
               className="input flex-1"
             >
               {[5,6,7,8,9].map((a) => <option key={a} value={a}>{a} yrs</option>)}
@@ -192,8 +194,8 @@ export default function GiveToy() {
             <select
               id="area"
               name="area"
-              value={form.area}
-              onChange={handleChange}
+              value={selects.area}
+              onChange={handleSelectChange}
               className={`input ${errors.area ? 'border-red-400' : ''}`}
             >
               <option value="">Select area…</option>
@@ -209,8 +211,7 @@ export default function GiveToy() {
               name="street"
               type="text"
               placeholder="e.g. W 79th & Riverside"
-              value={form.street}
-              onChange={handleChange}
+              defaultValue=""
               className={`input ${errors.street ? 'border-red-400' : ''}`}
             />
           </Field>
@@ -225,8 +226,7 @@ export default function GiveToy() {
               name="posterName"
               type="text"
               placeholder="e.g. Maria"
-              value={form.posterName}
-              onChange={handleChange}
+              defaultValue=""
               className={`input ${errors.posterName ? 'border-red-400' : ''}`}
             />
           </Field>
@@ -237,8 +237,7 @@ export default function GiveToy() {
               name="posterContact"
               type="text"
               placeholder="email or phone number"
-              value={form.posterContact}
-              onChange={handleChange}
+              defaultValue=""
               className={`input ${errors.posterContact ? 'border-red-400' : ''}`}
             />
           </Field>
