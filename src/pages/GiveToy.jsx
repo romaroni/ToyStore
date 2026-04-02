@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToys } from '../context/AppContext'
 import { CATEGORIES, CONDITIONS, UWS_AREAS } from '../data/mockToys'
@@ -36,9 +36,11 @@ export default function GiveToy() {
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
 
-  function set(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
-  }
+  // Stable handler — same function reference across all renders
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }, [])
 
   function validate() {
     const e = {}
@@ -107,10 +109,11 @@ export default function GiveToy() {
         <Field id="title" label="Toy name *" error={errors.title}>
           <input
             id="title"
+            name="title"
             type="text"
             placeholder="e.g. LEGO City Police Station"
             value={form.title}
-            onChange={set('title')}
+            onChange={handleChange}
             className={`input ${errors.title ? 'border-red-400' : ''}`}
           />
         </Field>
@@ -118,10 +121,11 @@ export default function GiveToy() {
         <Field id="description" label="Description *" error={errors.description}>
           <textarea
             id="description"
+            name="description"
             rows={4}
             placeholder="Describe the toy — what's included, what's missing, age it's been used for, any flaws..."
             value={form.description}
-            onChange={set('description')}
+            onChange={handleChange}
             className={`input resize-none ${errors.description ? 'border-red-400' : ''}`}
           />
         </Field>
@@ -130,8 +134,9 @@ export default function GiveToy() {
           <Field id="category" label="Category *" error={errors.category}>
             <select
               id="category"
+              name="category"
               value={form.category}
-              onChange={set('category')}
+              onChange={handleChange}
               className={`input ${errors.category ? 'border-red-400' : ''}`}
             >
               <option value="">Select category…</option>
@@ -144,8 +149,9 @@ export default function GiveToy() {
           <Field id="condition" label="Condition *" error={errors.condition}>
             <select
               id="condition"
+              name="condition"
               value={form.condition}
-              onChange={set('condition')}
+              onChange={handleChange}
               className={`input ${errors.condition ? 'border-red-400' : ''}`}
             >
               <option value="">Select condition…</option>
@@ -161,16 +167,18 @@ export default function GiveToy() {
           <label className="label">Suitable age range *</label>
           <div className="flex items-center gap-3">
             <select
+              name="ageMin"
               value={form.ageMin}
-              onChange={set('ageMin')}
+              onChange={handleChange}
               className={`input flex-1 ${errors.ageMin ? 'border-red-400' : ''}`}
             >
               {[5,6,7,8,9].map((a) => <option key={a} value={a}>{a} yrs</option>)}
             </select>
             <span className="text-gray-400 shrink-0">to</span>
             <select
+              name="ageMax"
               value={form.ageMax}
-              onChange={set('ageMax')}
+              onChange={handleChange}
               className="input flex-1"
             >
               {[5,6,7,8,9].map((a) => <option key={a} value={a}>{a} yrs</option>)}
@@ -183,8 +191,9 @@ export default function GiveToy() {
           <Field id="area" label="Your area *" error={errors.area}>
             <select
               id="area"
+              name="area"
               value={form.area}
-              onChange={set('area')}
+              onChange={handleChange}
               className={`input ${errors.area ? 'border-red-400' : ''}`}
             >
               <option value="">Select area…</option>
@@ -197,10 +206,11 @@ export default function GiveToy() {
           <Field id="street" label="Cross street / intersection *" error={errors.street}>
             <input
               id="street"
+              name="street"
               type="text"
               placeholder="e.g. W 79th & Riverside"
               value={form.street}
-              onChange={set('street')}
+              onChange={handleChange}
               className={`input ${errors.street ? 'border-red-400' : ''}`}
             />
           </Field>
@@ -212,10 +222,11 @@ export default function GiveToy() {
           <Field id="posterName" label="Your first name *" error={errors.posterName}>
             <input
               id="posterName"
+              name="posterName"
               type="text"
               placeholder="e.g. Maria"
               value={form.posterName}
-              onChange={set('posterName')}
+              onChange={handleChange}
               className={`input ${errors.posterName ? 'border-red-400' : ''}`}
             />
           </Field>
@@ -223,10 +234,11 @@ export default function GiveToy() {
           <Field id="posterContact" label="Email or phone * (shared only on request)" error={errors.posterContact}>
             <input
               id="posterContact"
+              name="posterContact"
               type="text"
               placeholder="email or phone number"
               value={form.posterContact}
-              onChange={set('posterContact')}
+              onChange={handleChange}
               className={`input ${errors.posterContact ? 'border-red-400' : ''}`}
             />
           </Field>
