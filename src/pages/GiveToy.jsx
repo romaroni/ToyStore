@@ -7,6 +7,16 @@ const EMOJI_BY_CATEGORY = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c.emoji])
 )
 
+function Field({ id, label, error, children }) {
+  return (
+    <div>
+      <label htmlFor={id} className="label">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  )
+}
+
 export default function GiveToy() {
   const { addToy } = useToys()
   const navigate = useNavigate()
@@ -73,14 +83,6 @@ export default function GiveToy() {
       </div>
     )
   }
-
-  const Field = ({ id, label, error, children }) => (
-    <div>
-      <label htmlFor={id} className="label">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
-    </div>
-  )
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
