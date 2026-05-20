@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W 68th Street — Then &amp; Now</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: #0c0b09;
+      color: #e8e2d4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 5rem 2rem 3.5rem;
+      border-bottom: 1px solid #1e1c18;
+    }
+
+    .street-label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #c8a87a;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin-bottom: 1.1rem;
+    }
+
+    header h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: #ede8de;
+      margin-bottom: 0.6rem;
+      line-height: 1.15;
+    }
+
+    header .subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      color: #7a7060;
+      font-style: italic;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 4.5rem 1.5rem 6rem;
+    }
+
+    /* ── Each pair ── */
+    .pair {
+      margin-bottom: 5.5rem;
+    }
+
+    .pair:last-child { margin-bottom: 0; }
+
+    .pair-number {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #3a3328;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin-bottom: 0.9rem;
+    }
+
+    /* ── Slider ── */
+    .slider {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      cursor: col-resize;
+      user-select: none;
+      -webkit-user-select: none;
+      background: #1a1714;
+      touch-action: none;
+    }
+
+    .slider.landscape { aspect-ratio: 4 / 3; }
+    .slider.portrait  { aspect-ratio: 2 / 3; }
+
+    .img-after,
+    .img-before {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Old photo clips from left; clip-path updated by JS */
+    .img-before {
+      z-index: 2;
+      clip-path: inset(0 50% 0 0);
+    }
+
+    /* ── Year labels ── */
+    .year-label {
+      position: absolute;
+      bottom: 0.9rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.52);
+      padding: 0.28rem 0.7rem;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .year-old { left: 0.9rem; }
+    .year-new { right: 0.9rem; }
+
+    /* ── Drag handle ── */
+    .handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateX(-50%);
+      z-index: 10;
+      cursor: col-resize;
+      pointer-events: none;
+    }
+
+    .handle-grip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      cursor: col-resize;
+    }
+
+    .handle-grip svg {
+      width: 18px;
+      height: 18px;
+      fill: #444;
+      flex-shrink: 0;
+    }
+
+    /* ── Caption ── */
+    .caption {
+      padding: 1.1rem 0 0;
+      border-top: 1px solid #1e1c18;
+    }
+
+    .caption-loc {
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #c8a87a;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin-bottom: 0.35rem;
+    }
+
+    .caption-title {
+      font-size: clamp(1rem, 2.4vw, 1.25rem);
+      font-weight: 400;
+      color: #e8e2d4;
+      line-height: 1.4;
+      margin-bottom: 0.35rem;
+    }
+
+    .caption-desc {
+      font-size: 0.88rem;
+      color: #7a7060;
+      font-style: italic;
+    }
+
+    .caption-years {
+      margin-top: 0.55rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: #3f3828;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid #1e1c18;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3a3328;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* ── Loading shimmer ── */
+    .slider::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #1a1714 25%, #222018 50%, #1a1714 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      z-index: 0;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    img { position: relative; z-index: 1; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      main   { padding: 3rem 1rem 4rem; }
+      header { padding: 3.5rem 1rem 2.5rem; }
+      .pair  { margin-bottom: 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="street-label">Upper West Side · Manhattan</span>
+  <h1>W 68th Street</h1>
+  <p class="subtitle">The same street, a century apart</p>
+  <p class="subtitle">A project by <a href="https://www.julianamaroni.com/"> Juliana Maroni, NYC Family Photographer</a></p>
+</header>
+
+<main>
+
+  <!-- ─── PAIR 1 ─── -->
+  <article class="pair">
+    <div class="pair-number">01 / 11</div>
+    <div class="slider landscape" id="s1">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1y6rWxHobtvR2uF1slvceuygB2D9QYCyG&sz=w1920" alt="Second Church of Christ, Scientist, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1t66dmnbiVTnD1V1tOxmgP9c_E6r5gTU-&sz=w1920" alt="Second Church of Christ, Scientist, 1938" style="object-position:38% 55%">
+      <span class="year-label year-old">1938</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">Central Park West &amp; W 68th St</p>
+      <h2 class="caption-title">Second Church of Christ, Scientist</h2>
+      <p class="caption-years">1938 &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 2 ─── -->
+  <article class="pair">
+    <div class="pair-number">02 / 11</div>
+    <div class="slider portrait" id="s2">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1iVOO7ObiF24gkRRJBXc3Nh5DXrTdpfxY&sz=w1920" alt="NW corner CPW & W 68th, 2026" style="object-position:38% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1O7LdEDRKHmgmKBC9M98ad9qCTv7-c-6b&sz=w1920" alt="NW corner CPW & W 68th, c.1920s" style="object-position:50% 22%">
+      <span class="year-label year-old">c. 1920s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">NW Corner of Central Park West &amp; W 68th St</p>
+      <h2 class="caption-title">Victorian Apartment to Modern Tower</h2>
+      <p class="caption-desc">The old Victorian building completely replaced by a modern tower.</p>
+      <p class="caption-years">c. 1920s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 3 ─── -->
+  <article class="pair">
+    <div class="pair-number">03 / 11</div>
+    <div class="slider landscape" id="s3">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1PRKJqULyFztGpHr6Xw5gp_zGRxP_AAsE&sz=w1920" alt="SW corner Columbus & W 68th, 2026" style="object-position:42% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1H-zpsxydzCqq7wXGRtzBErieo6wpCi0u&sz=w1920" alt="SW corner Columbus & W 68th under El, c.1938" style="object-position:50% 62%">
+      <span class="year-label year-old">c. 1938</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">SW Corner of Columbus Ave &amp; W 68th St</p>
+      <h2 class="caption-title">Under the El</h2>
+      <p class="caption-desc">Shot from under the old elevated train, now the United States Post Office branch.</p>
+      <p class="caption-years">c. 1938 &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 4 ─── -->
+  <article class="pair">
+    <div class="pair-number">04 / 11</div>
+    <div class="slider portrait" id="s4">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1z9zLHKjoLnNUmf0HtY1rCCAg9PSZs0mJ&sz=w1920" alt="SE corner Columbus & W 68th, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1iphVQcyJjNNKqlGahhuKX6MrFCXoltxg&sz=w1920" alt="SE corner Columbus & W 68th, c.1910s" style="object-position:55% 28%">
+      <span class="year-label year-old">c. 1910s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">SE Corner of Columbus Ave &amp; W 68th St</p>
+      <h2 class="caption-title">67 Wine — A Survivor</h2>
+      <p class="caption-desc">The corner building survived — now home to 67 Wine.</p>
+      <p class="caption-years">c. 1910s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 5 ─── -->
+  <article class="pair">
+    <div class="pair-number">05 / 11</div>
+    <div class="slider landscape" id="s5">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1ZKNGEaFF-xidZubeE_n7JNYaR0tnGA3X&sz=w1920" alt="SE corner Broadway & W 68th, 2026" style="object-position:28% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1rWwFG4a2Y-kEfuHuqgYxOR_1Hm7X9_Ro&sz=w1920" alt="SE corner Broadway & W 68th, c.1938" style="object-position:50% 58%">
+      <span class="year-label year-old">c. 1938</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">SE Corner of Broadway &amp; W 68th St</p>
+      <h2 class="caption-title">AMC Lincoln Square</h2>
+      <p class="caption-desc">Now home to the AMC Lincoln Square.</p>
+      <p class="caption-years">c. 1938 &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 6 ─── -->
+  <article class="pair">
+    <div class="pair-number">06 / 11</div>
+    <div class="slider landscape" id="s6">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1JVbU7njtI4DhocuRI1wB0Hn9ME292hP-&sz=w1920" alt="SE corner Broadway & W 68th wide, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1dryQGTVOl7cLzHlMEkuhrtNaedNp2d1l&sz=w1920" alt="SE corner Broadway & W 68th wide, c.1940s" style="object-position:50% 50%">
+      <span class="year-label year-old">c. 1940s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">SE Corner of Broadway &amp; W 68th St</p>
+      <h2 class="caption-title">AMC Lincoln Square — Wide View</h2>
+      <p class="caption-desc">Now home to the AMC Lincoln Square.</p>
+      <p class="caption-years">c. 1940s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 7 ─── -->
+  <article class="pair">
+    <div class="pair-number">07 / 11</div>
+    <div class="slider landscape" id="s7">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1x3pJjGPaYtWRAsswU_fR_52-jyDzIqrW&sz=w1920" alt="NE corner Broadway & W 68th, 2026" style="object-position:62% 60%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=18UQIUVnpPjkj_30BGOg7Cnjp1nMHqcUY&sz=w1920" alt="NE corner Broadway & W 68th, Beaux-Arts showroom" style="object-position:58% 55%">
+      <span class="year-label year-old">c. 1920s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">NE Corner of Broadway &amp; W 68th St</p>
+      <h2 class="caption-title">The Beaux-Arts Auto Showroom</h2>
+      <p class="caption-desc">Stunning Beaux-Arts auto showroom at Broadway &amp; W 68th replaced by a modern building.</p>
+      <p class="caption-years">c. 1920s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 8 ─── -->
+  <article class="pair">
+    <div class="pair-number">08 / 11</div>
+    <div class="slider landscape" id="s8">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1___ktkRscVbMveZwEgwQq3WL2ZLTSNSh&sz=w1920" alt="Broadway & W 68th looking north, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1TekTIeQuJ2n0SORrSnIL5Dv4st14lUfO&sz=w1920" alt="Broadway & W 68th looking north, Gothic hotel, c.1930s" style="object-position:50% 48%">
+      <span class="year-label year-old">c. 1930s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">Broadway &amp; W 68th St Looking North</p>
+      <h2 class="caption-title">The Hotel Nevada</h2>
+      <p class="caption-desc">The Hotel Nevada used to be at 2025 Broadway between W 69th and W 70th Streets. According to <a href="https://stuffnobodycaresabout.com/2019/06/28/hotels-upper-west-side/">"Stuff Nobody Cares About"</a>, in 1923 a two room apartment with bath could be rented for $1,500 per year. The Nevada Towers, opened in 1974, now stands on the site.</p>
+      <p class="caption-years">c. 1930s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 9 ─── -->
+  <article class="pair">
+    <div class="pair-number">09 / 11</div>
+    <div class="slider landscape" id="s9">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=105-i89dS-lyGAu-cZmgwvPPN2tM7qUCb&sz=w1920" alt="Broadway & W 68th looking north, 2026" style="object-position:28% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=13_lYUVj5oHwp33JaJSH8haFh0zyVYlpg&sz=w1920" alt="Broadway & W 68th, Chevrolet billboard, c.1940s" style="object-position:40% 48%">
+      <span class="year-label year-old">c. 1940s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">Broadway &amp; W 68th St Looking North</p>
+      <h2 class="caption-title">The Chevrolet Billboard</h2>
+      <p class="caption-desc">Chevrolet billboard over the old Hotel Nevada.</p>
+      <p class="caption-years">c. 1940s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 10 ─── -->
+  <article class="pair">
+    <div class="pair-number">10 / 11</div>
+    <div class="slider landscape" id="s10">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=1y9gUPjmR6lGYdml0FBnTBfE4JFnLeUEU&sz=w1920" alt="Amsterdam & W 68th looking NE, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1SkT6-_PkcfeAOQbz3QLdtA5p-OInbhTP&sz=w1920" alt="Amsterdam & W 68th, Victorian hotel, c.1930s" style="object-position:50% 48%">
+      <span class="year-label year-old">c. 1930s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">Amsterdam Ave &amp; W 68th St Looking Northeast</p>
+      <h2 class="caption-title">The Hotel Nevada, seen from Amsterdam Ave</h2>
+      <p class="caption-desc">Another view of The Hotel Nevada.</p>
+      <p class="caption-years">c. 1930s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+  <!-- ─── PAIR 11 ─── -->
+  <article class="pair">
+    <div class="pair-number">11 / 11</div>
+    <div class="slider portrait" id="s11">
+      <img class="img-after"  src="https://drive.google.com/thumbnail?id=10yswk0lgmrovlkluSuz-yN61VPXB9Fi4&sz=w1920" alt="SE corner Amsterdam & W 68th, 2026" style="object-position:50% 50%">
+      <img class="img-before" src="https://drive.google.com/thumbnail?id=1sMlK80-379t7Q7XQCFMut4NEtwEForEA&sz=w1920" alt="SE corner Amsterdam & W 68th, Victorian building, c.1920s" style="object-position:55% 28%">
+      <span class="year-label year-old">c. 1920s</span>
+      <span class="year-label year-new">2026</span>
+      <div class="handle"><div class="handle-grip"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+    <div class="caption">
+      <p class="caption-loc">SE Corner of Amsterdam Ave &amp; W 68th St</p>
+      <h2 class="caption-title">The Cupola Corner</h2>
+      <p class="caption-desc">The ornate Victorian corner building with cupola replaced by the modern apartment building.</p>
+      <p class="caption-years">c. 1920s &nbsp;·&nbsp; 2026</p>
+    </div>
+  </article>
+
+</main>
+
+<footer>W 68th Street &nbsp;·&nbsp; Upper West Side &nbsp;·&nbsp; Manhattan</footer>
+
+<script>
+  document.querySelectorAll('.slider').forEach(function(slider) {
+    const imgBefore = slider.querySelector('.img-before');
+    const handle    = slider.querySelector('.handle');
+    let active = false;
+
+    function moveTo(clientX) {
+      const rect = slider.getBoundingClientRect();
+      const pct  = Math.max(1, Math.min(99, (clientX - rect.left) / rect.width * 100));
+      imgBefore.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+      handle.style.left        = pct + '%';
+    }
+
+    // Initialise at 50%
+    function init() {
+      const rect = slider.getBoundingClientRect();
+      if (rect.width > 0) moveTo(rect.left + rect.width * 0.5);
+      else requestAnimationFrame(init);
+    }
+    init();
+
+    // Mouse
+    slider.addEventListener('mousedown', function(e) {
+      active = true;
+      moveTo(e.clientX);
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (active) moveTo(e.clientX);
+    });
+    document.addEventListener('mouseup', function() { active = false; });
+
+    // Touch
+    slider.addEventListener('touchstart', function(e) {
+      active = true;
+      moveTo(e.touches[0].clientX);
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (active) {
+        moveTo(e.touches[0].clientX);
+        e.preventDefault();
+      }
+    }, { passive: false });
+    document.addEventListener('touchend', function() { active = false; });
+  });
+</script>
+
+</body>
+</html>
